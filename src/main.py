@@ -17,6 +17,9 @@ import analyse.analyse as ans
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# 引入自己 写的html工具
+from src.html import htmlG
+
 # 用户数量封顶
 user_count = 6040
 
@@ -94,7 +97,7 @@ y = data['rating']  # 目标变量
 # 拆分数据集
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 创建随机森林回归模型
+# 创建随机森林回归模型 构建决策树100 随机状态设置42
 rf = RandomForestRegressor(n_estimators=100, random_state=42)
 rf.fit(X_train, y_train)
 
@@ -170,5 +173,8 @@ if mse <= 2:
         # 打印推荐的电影
         print("推荐的电影:")
         print(top_recommendations[['title', 'predicted_rating']])
+
+        # 将这个数据写成html
+        htmlG.generate(top_recommendations)
 else:
     print('mse误差过大 请调整数据')
