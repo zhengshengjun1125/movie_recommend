@@ -1,0 +1,82 @@
+
+    <!DOCTYPE html>
+    <html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <title>电影推荐</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: linear-gradient(to bottom, #f7f7f7, #eaeaea);
+            }
+            h1 {
+                color: #333;
+                text-align: center;
+                padding: 20px 0;
+                transition: color 0.3s ease;
+            }
+            .movie-recommendation {
+                margin: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                transition: box-shadow 0.3s ease;
+                border-radius: 5px;
+                overflow: hidden;
+            }
+            .movie-title {
+                font-size: 20px;
+                font-weight: bold;
+                padding: 10px 0;
+                background-color: #f7f7f7;
+                border-bottom: 1px solid #ddd;
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
+            .movie-rating {
+                font-size: 16px;
+                color: #555;
+                padding: 10px 0;
+                text-align: right;
+            }
+            .movie-recommendation:hover {
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            .movie-title:hover {
+                background-color: #eaeaea;
+                color: #333;
+            }
+        </style>
+    </head>
+    
+        <div class="movie-recommendation">
+            <div class="movie-title" style="color:red">电影名称:Raiders of the Lost Ark (1981)</div>
+            <div class="movie-rating">预测评分: 4.301487740662047</div>
+        </div>
+        
+        <div class="movie-recommendation">
+            <div class="movie-title" style="color:red">电影名称:Star Wars: Episode V - The Empire Strikes Back (1980)</div>
+            <div class="movie-rating">预测评分: 4.284690866525668</div>
+        </div>
+        
+        <div class="movie-recommendation">
+            <div class="movie-title" style="color:red">电影名称:Princess Bride, The (1987)</div>
+            <div class="movie-rating">预测评分: 4.263418412966724</div>
+        </div>
+        
+        <div class="movie-recommendation">
+            <div class="movie-title" style="color:red">电影名称:One Flew Over the Cuckoo's Nest (1975)</div>
+            <div class="movie-rating">预测评分: 4.25749650065944</div>
+        </div>
+        
+        <div class="movie-recommendation">
+            <div class="movie-title" style="color:red">电影名称:Maltese Falcon, The (1941)</div>
+            <div class="movie-rating">预测评分: 4.168181316174702</div>
+        </div>
+        
+        <div class="movie-recommendation">
+            <img src="rating_boxplot.png" alt="评分数据特征异常 箱线图">
+        </div>
+        <div class="movie-recommendation">
+            <img src="movie_boxplot.png" alt="电影数据特征异常 箱线图">
+        
+    </body>
+    </html>
+    

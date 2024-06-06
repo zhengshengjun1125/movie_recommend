@@ -1,3 +1,8 @@
+"""
+随机森林模型
+"""
+import os
+
 # 数据分析类库
 import pandas as pd
 
@@ -13,9 +18,8 @@ from sklearn.metrics import mean_squared_error
 # 自定义的数据分析功能
 import analyse.analyse as ans
 
-# 数据可视化库
-import seaborn as sns
-import matplotlib.pyplot as plt
+# 引入图形工具
+from src.util import chart_util
 
 # 引入自己 写的html工具
 from src.html import htmlG
@@ -23,6 +27,30 @@ from src.html import htmlG
 # 用户数量封顶
 user_count = 6040
 
+# 图表文件夹
+chart_folder = 'chart/forest/'
+
+# 检查img文件夹是否存在，如果不存在则创建
+if not os.path.exists(chart_folder):
+    os.makedirs(chart_folder)
+
+before_flog = input("是否需要可视化预处理  1 true \n")
+after_flag = input("是否需要可视化数据分析  1 true")
+
+before_flog = before_flog == '1'
+after_flag = after_flag == '1'
+
+if before_flog:
+    print('开启数据预处理可视化')
+else:
+    print('跳过数据预处理可视化')
+
+if after_flag:
+    print('开启数据分析可视化')
+else:
+    print('跳过数据分析可视化')
+
+print("开始数据预处理")
 """
 作者: 郑声军
 日期: 2024-06-05
@@ -38,35 +66,14 @@ ratings.columns = ['userId', 'movieId', 'rating', 'ratingTime']
 ratings['userId'] = ratings['userId'].astype(int)
 ratings['movieId'] = ratings['movieId'].astype(int)
 ratings['rating'] = ratings['rating'].astype(float)
-ratings['ratingTime'] = ratings['ratingTime'].astype(int)  # 假设时间戳是整数
+ratings['ratingTime'] = ratings['ratingTime'].astype(int)  # 时间戳是整数
 
 # 转换评分时间为日期时间格式
 ratings['ratingTime'] = pd.to_datetime(ratings['ratingTime'], unit='s')
+ratings['ratingTime'] = str(ratings['ratingTime'])
 
-# 可视化 - 箱线图观察电影数据特征是否有异常值
-sns.boxplot(data=movie)
-plt.title('电影箱线图')
-plt.show()
-
-# 可视化 - 箱线图观察评分数据特征是否有异常值
-for column in ['rating']:
-    sns.boxplot(x=ratings[column])
-    plt.title(f'评分箱线图')
-    plt.show()
-
-# 可视化 - 柱状图了解用户ID和电影ID的分布情况
-sns.countplot(x='userId', data=ratings)
-plt.title('用户ID 柱状图')
-plt.show()
-
-sns.countplot(x='movieId', data=ratings)
-plt.title('电影ID 柱状图')
-plt.show()
-
-# 可视化 - 直方图了解评分的分布情况
-sns.histplot(ratings['rating'], bins=20, kde=True)
-plt.title('评分 直方图')
-plt.show()
+if before_flog:
+    chart_util.preview(movie, ratings, chart_folder)
 
 # 检查数据缺失 真正的查看缺失值
 miss_movie = ans.check_missing_values(movie).sum()
@@ -81,15 +88,20 @@ if miss_rating > 0:
     # 这是评分数据 采用删除策略
     rating = ans.handle_missing_values(ratings, True)
 
-# 到这里数据预处理完毕
+# 将数据合并
+data = pd.merge(ratings, movie, on="movieId")
 
+# 过滤重复项
+data = ans.remove_duplicates(data)
+
+# 到这里数据预处理完毕
+print("数据预处理完毕")
 """
 作者: 郑声军
 日期: 2024-06-06
 功能: 数据分析
 """
-# 开始进行数据分析 我们根据电影相关分数和和评分平均值作为度量关键 为用户推荐电影
-data = pd.merge(ratings, movie, on="movieId")
+print("开始数据分析")
 # 数据分析 - 使用随机森林回归模型预测电影评分
 X = data[['userId', 'movieId']]  # 特征
 y = data['rating']  # 目标变量
@@ -97,8 +109,10 @@ y = data['rating']  # 目标变量
 # 拆分数据集
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 创建随机森林回归模型 构建决策树100 随机状态设置42
-rf = RandomForestRegressor(n_estimators=100, random_state=42)
+# 创建随机森林回归模型 构建决策树50 最大深度10 平方差算法  随机状态设置42
+rf = RandomForestRegressor(n_estimators=50, max_depth=10, max_features='sqrt', n_jobs=-1, random_state=42)
+
+# 开始训练  如果决策树数量过多 会导致程序运行过慢
 rf.fit(X_train, y_train)
 
 # 预测测试集
@@ -107,39 +121,26 @@ y_pre = rf.predict(X_test)
 # 评估模型
 mse = mean_squared_error(y_test, y_pre)
 
+print("数据分析完毕")
+print("开始生成推荐数据")
+"""
+作者: 郑声军
+日期: 2024-06-06
+功能: 推荐电影
+"""
 # 因为我们的评分在1-5之内 如果能在2以内的误差 都是能接受的
 if mse <= 2:
-    # 可视化评分分布
-    sns.histplot(data['rating'], kde=True)
-    plt.title('评级分布')
-    plt.show()
-
-    # 可视化评分与时间的关系
-    sns.scatterplot(data=data, x='ratingTime', y='rating')
-    plt.title('评分与时间变化')
-    plt.show()
-
-    # 可视化用户评分数量
-    user_ratings = data.groupby('userId').size()
-    sns.barplot(x=user_ratings.index, y=user_ratings.values)
-    plt.title('每个用户的评级数')
-    plt.show()
-
-    # 可视化电影评分平均值
-    movie_ratings_avg = data.groupby('movieId')['rating'].mean()
-    sns.barplot(x=movie_ratings_avg.index, y=movie_ratings_avg.values)
-    plt.title('平均评分')
-    plt.show()
-
-    # 可视化电影评分次数
-    movie_ratings_count = data.groupby('movieId')['rating'].count()
-    sns.barplot(x=movie_ratings_count.index, y=movie_ratings_count.values)
-    plt.title('电影的评分次数')
-    plt.show()
+    if after_flag:
+        chart_util.after_view(data, chart_folder)
 
     uId = input("输入一个用户id 我们将根据此用户id对它进行电影推荐")
     # 把这个uId 转换为数字
-    uId = int(uId)
+    try:
+        uId = int(uId)
+    except:
+        print('输入必须为数字')
+        exit()
+
     if uId < 0 or uId > user_count:
         print('用户id不合法')
     else:
@@ -167,14 +168,19 @@ if mse <= 2:
         # 步骤5: 根据预测的评分对推荐结果进行排序
         recommended_movies = recommended_movies.sort_values(by='predicted_rating', ascending=False)
 
-        # 步骤6: 选择评分最高的几部电影作为推荐
+        # 步骤7: 对电影数据进行去重 如果不去重 将会推荐重复数据
+        recommended_movies.drop_duplicates(inplace=True)
+
+        # 步骤8: 选择评分最高的几部电影作为推荐
         top_recommendations = recommended_movies.head(5)
 
-        # 打印推荐的电影
-        print("推荐的电影:")
-        print(top_recommendations[['title', 'predicted_rating']])
-
+        """
+        作者: 郑声军
+        日期: 2024-06-06
+        功能: 数据可视化
+        """
         # 将这个数据写成html
-        htmlG.generate(top_recommendations)
+        htmlG.generate(top_recommendations, before_flog, after_flag)
 else:
     print('mse误差过大 请调整数据')
+print("生成推荐数据结束")
