@@ -4,7 +4,6 @@
 功能: web页面生成器
 """
 
-
 def generate(top_recommendations, before_flag, after_flag):
     # 检查输入数据的正确性
     if not ('movieName' and 'predicted_rating' in top_recommendations.columns):
@@ -61,7 +60,7 @@ def generate(top_recommendations, before_flag, after_flag):
     """
 
     # HTML 主体内容
-    html_body = ""
+    html_body = "<body> <h1>推荐电影列表</h1> "
     for index, row in top_recommendations.iterrows():
         html_body += f"""
         <div class="movie-recommendation">
@@ -69,8 +68,6 @@ def generate(top_recommendations, before_flag, after_flag):
             <div class="movie-rating">预测评分: {row['predicted_rating']}</div>
         </div>
         """
-
-
 
     if before_flag:
         # 用户ID的分布情况.png
@@ -80,26 +77,16 @@ def generate(top_recommendations, before_flag, after_flag):
         # 电影数据特征异常 箱线图.png
         # 将各种图表写入html中
         html_body += """
-        <h1>用户ID的分布情况<h1/>
+        <h1>评分数据缺失扇形图</h1>
         <div class="movie-recommendation">
-            <img src="./chart/forest/用户ID的分布情况.png" alt="用户ID的分布情况">
+            <img src="./chart/forest/评分数据缺失扇形图.png" alt="评分数据缺失扇形图">
         </div>
-          <h1>评分的分布情况<h1/>
+        
+        <h1>电影数据缺失扇形图</h1>
         <div class="movie-recommendation">
-            <img src="./chart/forest/评分的分布情况.png" alt="评分的分布情况">
+            <img src="./chart/forest/电影数据缺失扇形图.png" alt="电影数据缺失扇形图">
         </div>
-          <h1>电影ID的分布情况<h1/>
-        <div class="movie-recommendation">
-            <img src="./chart/forest/电影ID的分布情况.png" alt="电影ID的分布情况">
-       </div>
-         <h1>电影数据特征异常<h1/>
-          <div class="movie-recommendation">
-            <img src="./chart/forest/评分数据特征异常_箱线图.png" alt="电影数据特征异常">
-       </div>
-         <h1>评分数据特征异常<h1/>
-          <div class="movie-recommendation">
-            <img src="./chart/forest/评分数据特征异常_箱线图.png" alt="评分数据特征异常">
-       </div>
+        
        """
 
     if after_flag:
@@ -107,23 +94,11 @@ def generate(top_recommendations, before_flag, after_flag):
         # 电影数据特征异常 箱线图.png
         # 将各种图表写入html中
         html_body += """
+        <h1>电影排行榜</h1>
         <div class="movie-recommendation">
-            <img src="./chart/forest/评分分布.png" alt="评分分布">
+            <img src="./chart/forest/电影排行榜.png" alt="电影排行榜">
         </div>
-        <div class="movie-recommendation">
-            <img src="./chart/forest/评分与时间的关系.png" alt="评分与时间的关系">
-        <div/>
-        <div class="movie-recommendation">
-            <img src="./chart/forest/用户评分数量.png" alt="用户评分数量">
-        <div/>
-        <div class="movie-recommendation">
-            <img src="./chart/forest/电影评分平均值.png" alt="电影评分平均值">
-        <div/>
-        <div class="movie-recommendation">
-            <img src="./chart/forest/电影评分次数.png" alt="电影评分次数">
-        <div/>
         """
-
     # HTML 结尾
     html_foot = """
     </body>
@@ -132,7 +107,7 @@ def generate(top_recommendations, before_flag, after_flag):
 
     # 将 HTML 内容写入文件
     try:
-        with open('movie_recommendations.html', 'w', encoding='utf-8') as file:
+        with open('推荐电影.html', 'w', encoding='utf-8') as file:
             file.write(html_head + html_body + html_foot)
         print("电影推荐 HTML 文件已生成。")
     except Exception as e:

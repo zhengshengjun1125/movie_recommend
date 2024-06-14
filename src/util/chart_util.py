@@ -2,57 +2,51 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# 设置matplotlib的字体，以支持中文显示
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
-def preview(movie, ratings, chart_folder):
-    # 可视化 - 箱线图观察电影数据特征是否有异常值
-    sns.boxplot(data=movie)
-    plt.title('Box plot')
-    plt.savefig(chart_folder + '电影数据特征异常_箱线图.png')
+plt.figure(figsize=(10, 8))  # 宽度为10英寸，高度为8英寸
 
-    # 可视化 - 箱线图观察评分数据特征是否有异常值
-    for column in ['rating']:
-        sns.boxplot(x=ratings[column])
-        plt.title(f'Box plot')
-        plt.savefig(chart_folder + '评分数据特征异常_箱线图.png')
 
-    # 可视化 - 柱状图了解用户ID和电影ID的分布情况
-    sns.countplot(x='userId', data=ratings)
-    plt.title('User ID bar chart')
-    plt.savefig(chart_folder + '用户ID的分布情况.png')
+def preview(movie_total, ratings_total, chart_folder, movie_lose, ratings_lose):
+    # 对plt进行状态清空
+    plt.clf()
+    # 电影数据缺失扇形图
+    labels = ['正常的数据量', '丢失的数据量']
+    sizes = [movie_total - movie_lose, movie_lose]
+    colors = ['lightgreen', 'red']  # 红色代表缺失量  绿色代表正常的
+    explode = (0.1, 0)  # 突出显示缺失数据部分
+    plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=True, startangle=140)
+    # 确保饼图是圆形的
+    plt.axis('equal')
+    plt.title('电影数据缺失扇形图')
+    plt.savefig(chart_folder + '电影数据缺失扇形图.png')
 
-    sns.countplot(x='movieId', data=ratings)
-    plt.title('movie ID bar chart')
-    plt.savefig(chart_folder + '电影ID的分布情况.png')
-
-    # 可视化 - 直方图了解评分的分布情况
-    sns.histplot(ratings['rating'], bins=20, kde=True)
-    plt.title('Score histogram')
-    plt.savefig(chart_folder + '评分的分布情况.png')
+    # 评分数据缺失扇形图 红色代表缺失量  绿色代表正常的
+    sizes = [ratings_total - ratings_lose, ratings_lose]
+    plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+            autopct='%1.1f%%', shadow=True, startangle=140)
+    # 确保饼图是圆形的
+    plt.axis('equal')
+    plt.title('评分数据缺失扇形图')
+    plt.savefig(chart_folder + '评分数据缺失扇形图.png')
 
 
 def after_view(data, chart_folder):
-    global user_ratings
-    plt.ioff()  # 关闭图像交互
-    # 可视化评分分布
-    sns.histplot(data['rating'], kde=True)
-    plt.title('Rating distribution')
-    plt.savefig(chart_folder + '评分分布.png')
-    # 可视化评分与时间的关系  类型异常  todo
-    sns.scatterplot(data=data, x='ratingTime', y='rating')
-    plt.title('Rating and time distribution')
-    plt.savefig(chart_folder + '评分与时间的关系.png')
-    # 可视化用户评分数量
-    user_ratings = data.groupby('userId').size()
-    sns.barplot(x=user_ratings.index, y=user_ratings.values)
-    plt.title('The number of ratings per user')
-    plt.savefig(chart_folder + '用户评分数量.png')
-    # 可视化电影评分平均值
-    movie_ratings_avg = data.groupby('movieId')['rating'].mean()
-    sns.barplot(x=movie_ratings_avg.index, y=movie_ratings_avg.values)
-    plt.title('Average rating')
-    plt.savefig(chart_folder + '电影评分平均值.png')
-    # 可视化电影评分次数
-    movie_ratings_count = data.groupby('movieId')['rating'].count()
-    sns.barplot(x=movie_ratings_count.index, y=movie_ratings_count.values)
-    plt.title('The number of times the movie was rated')
-    plt.savefig(chart_folder + '电影评分次数.png')
+    # 对plt进行状态清空
+    plt.clf()
+    # 假设df是你的DataFrame
+    movie_avg_ratings = data.groupby('movieName')['rating'].mean().sort_values(ascending=False)
+    top_movies = movie_avg_ratings.head(20)
+    # 绘制条形图
+    top_movies.plot(kind='barh', color='skyblue')
+    plt.title('电影排行榜')
+    plt.xlabel('平均评分')
+    plt.ylabel('电影名称')
+    # 显示X轴的标签
+    plt.xticks(rotation=45, ha='right')  # 旋转标签以便阅读
+    # 显示图表
+    plt.tight_layout()  # 调整布局以适应标签
+    plt.savefig(chart_folder + '电影排行榜.png')

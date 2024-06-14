@@ -1,6 +1,7 @@
 """
 随机森林模型
 """
+# 引入系统库
 import os
 
 # 数据分析类库
@@ -72,12 +73,13 @@ ratings['ratingTime'] = ratings['ratingTime'].astype(int)  # 时间戳是整数
 ratings['ratingTime'] = pd.to_datetime(ratings['ratingTime'], unit='s')
 ratings['ratingTime'] = str(ratings['ratingTime'])
 
-if before_flog:
-    chart_util.preview(movie, ratings, chart_folder)
-
 # 检查数据缺失 真正的查看缺失值
 miss_movie = ans.check_missing_values(movie).sum()
 miss_rating = ans.check_missing_values(ratings).sum()
+
+# 需要预处理图表
+if before_flog:
+    chart_util.preview(movie.shape[0], ratings.shape[0], chart_folder, miss_movie, miss_rating)
 
 # 如果有数据缺失 将其删除或者填充
 if miss_movie > 0:
